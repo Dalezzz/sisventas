@@ -1,0 +1,74 @@
+{% extends "plantilla.html" %}
+{% block content %}
+<div class="container">
+ <div class="card card-outline card-info mt-3">
+    <div class="card-header">
+        <h1 class="card-title">LISTADO DE VENTAS</h1>
+    <a href="{% url 'agregarventas' %}" class='btn btn-sm btn-primary btnadd'><i
+    class='fas fa-plus'></i> NUEVO</a>
+    </div>
+ <div class="card-body">
+
+    <form action="" method="GET" class="form-inline mb-3">
+        <input type="text" name="buscar" class="form-control mr-2" placeholder="Buscar" value="">
+        <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+    </form>
+
+    <table class="table table-striped">
+        <thead class="bg-info text-white">
+            <tr>
+                <th>CODIGO</th>
+                <th>DESCRIPCIÓN</th>
+                <th>FECHA</th>
+                <th>RUC/DNI</th>
+                <th>NOMBRES/RAZON</th>
+                <th>TOTAL</th>
+                <th><center>OPCIONES</center></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if ventas %}
+            {% for v in ventas %}
+                <tr>
+                    <td>{{ v.id }}</td>
+                    <td>{{ v.idtipo.descripcion }}</td>
+                    <td>{{ v.fechaventa }}</td>
+                    <td>{{ v.idcliente.dniruc }}</td>
+                    <td>{{ v.idcliente.nombres }}</td>
+                    
+                    <td>{{ v.total }}</td>
+                    <td class="text-center">
+                        <a href="#" onclick="eliminarVenta('{{v.id}}','{{v.idtipo.descripcion}}','{{v.idcliente.nombres}}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Eliminar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="7" class="text-center">No hay registros</td></tr>
+        {% endif %}
+        </tbody>
+    </table>
+ </div>
+</div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function eliminarVenta(id, descripcion, cliente) {
+    Swal.fire({
+        title: "¿Eliminar esta venta?",
+        text: "Venta del cliente: " + cliente + "\tDescripcion: " + descripcion,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#dc3545"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'eliminarventa' 0 %}".replace('0', id);
+        }
+    });
+};
+</script>
+{% endblock %}

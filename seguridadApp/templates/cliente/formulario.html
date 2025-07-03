@@ -1,0 +1,20 @@
+{% extends "plantilla.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Formulario de Cliente{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Formulario de Cliente</h3>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <a href="{% url 'clientes' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

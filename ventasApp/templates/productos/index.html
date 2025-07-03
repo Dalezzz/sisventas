@@ -1,0 +1,87 @@
+{% extends "plantilla.html" %}
+{% block content %}
+<div class="container">
+ <div class="card card-outline card-info mt-3">
+    <div class="card-header d-flex justify-content-between">
+        <h1 class="card-title">LISTADO DE PRODUCTOS</h1>
+        <a href="{% url 'agregarproducto' %}" class='btn btn-sm btn-primary btnadd'>
+            <i class='fas fa-plus'></i> NUEVO
+        </a>
+    </div>
+
+ <div class="card-body">
+    <div class="row">
+        <div class="col-md-6 pull-right">
+            <form action="" method="GET">
+                <div class="input-group">
+                    <input type="text" name="buscar" id="buscar" class="form-control" autofocus placeholder="Buscar" value="">
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary">
+                        <i class="fa fa-search"></i>
+                        </button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table id="tablaproductos" class="table table-striped mt-4" style="width:100%">
+        <thead class="bg-info text-white">
+        <tr>
+            <th>ID</th>
+            <th>DESCRIPCION</th>
+            <th>CATEGORIA</th>
+            <th>PRECIO</th>
+            <th>CANTIDAD</th>
+            <th>UNIDAD</th>
+            <th><center>OPCIONES</center></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if productos %}
+            {% for prod in productos %}
+            <tr>
+                <td>{{ prod.id }}</td>
+                <td>{{ prod.descripcion }}</td>
+                <td>{{ prod.categorias.descripcion }}</td>
+                <td>{{ prod.precio }}</td>
+                <td>{{ prod.cantidad }}</td>
+                <td>{{ prod.unidades.descripcion }}</td>
+                <td style="text-align: center;">
+                    <a href="{% url 'editarproducto' prod.id %}" class="btn btn-info btn-sm"><i class="fa fa-edit"></i> Editar</a>
+                    <a href="#" onclick="eliminarProducto('{{ prod.id }}', '{{ prod.descripcion }}')" class="btn btn-danger btn-sm">
+                        <i class="fa fa-trash"></i> Eliminar
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="7" class="text-center">No hay registros</td></tr>
+        {% endif %}
+        </tbody>
+    </table>
+ </div>
+ </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+ function eliminarProducto(id, descripcion){
+    Swal.fire({ 
+        title: "¿Desea eliminar el producto?",
+        text: "ID: " + id + " - " + descripcion,
+        icon: "warning",
+        showCancelButton: true,
+        cancelButtonText: "No",
+        confirmButtonText: "Sí, eliminar",
+        confirmButtonColor: "#dc3545"
+    }).then(function(result){
+        if(result.isConfirmed){
+            window.location.href = "{% url 'eliminarproducto' 0 %}".replace('0', id);
+        }
+    });
+ }
+</script>
+{% endblock %}

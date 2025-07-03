@@ -1,0 +1,369 @@
+{% extends "plantilla.html" %}
+{% block css %}
+<link rel="stylesheet" href="/assets/calendario/css/bootstrap-datepicker.standalone.css">
+<link rel="stylesheet" href="/assets/select2/bootstrap-select.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+{% endblock %}
+{% block content %}
+{% load crispy_forms_tags %}
+<div class="container">
+    <div class="card card-info mx-4 my-4">
+        <div class="card-header">
+            <h1 class="card-title">AGREGAR VENTA</h1>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+            <div class="row">
+                
+                <div class="col-md-5 ow">
+                    <label for="{{ form_cabecera.fechaventa.id_for_label }}">Fecha de Venta</label>
+                    {{ form_cabecera.fechaventa|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="{{ form_cabecera.idtipo.id_for_label }}">Tipo</label>
+                    {{ form_cabecera.idtipo|as_crispy_field }}
+                </div>
+                <div class="col-md-4" readonly>
+                    <label for="{{ form_cabecera.nrodoc.id_for_label }}">Nro. Doc.</label>
+                    {{ form_cabecera.nrodoc|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <label for="{{ form_cabecera.idcliente.id_for_label }}">Cliente</label>
+                    {{ form_cabecera.idcliente|as_crispy_field }}
+                </div>
+                <div class="col-md-4">
+                    <label >Dni/RUC</label>
+                    <input type="text" class="form-control" id="dniruc" name="dniruc" readonly>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-3">
+                    <label >Direccion</label>
+                </div>
+                <div class="col-md-9">
+                    <input type="text" class="form-control" id="direccion" name="direccion" readonly>
+                </div>
+            </div>
+
+            
+            <div class="row mt-2">
+                <div class="col-md-3" hidden>
+                    <label for="{{ form_cabecera.igv.id_for_label }}">IGV</label>
+                    {{ form_cabecera.igv|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-7">
+                    <label for="producto-select">Producto</label>
+                    <select id="producto-select" class="form-control">
+                        <option value="">-- Seleccione un producto --</option>
+                        {% for producto in productos %}
+                        <option value="{{ producto.id }}">{{ producto.descripcion }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>Unidad</label>
+                    <input type="text" id="unidadpe" name="unidadpe" class="form-control" readonly>
+                </div>
+                <div class="col-md-1" hidden>
+                    <label>Stock Disponible</label>
+                    <input type="text" id="stock" name="stock" class="form-control" readonly>
+                </div>
+            </div>
+            <div class="row">
+                
+                <div class="col-md-3">
+                    <label>Precio</label>
+                    <input type="text" id="preciope" name="preciope" class="form-control" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label>Cantidad</label>
+                    <input type="number" id="cantidadpe" name="cantidadpe" class="form-control" min="1" value="1">
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary w-100" id="btn-agregar-producto"  onclick="agregarDetalle()">Agregar</button>
+                </div>
+            </div>
+                <h5>Detalle de la venta</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Opciones</th>
+                            <th>Codigo</th>
+                            <th>Descripcion</th>
+                            <th>Unidad</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>importe</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detalles" name="detalles">
+                    </tbody>
+                </table>
+                <div class="row mt-2">
+                    <div class="col-md-1" hidden>
+                        <label for="{{ form_cabecera.estado.id_for_label }}">Estado</label>
+                        {{ form_cabecera.estado|as_crispy_field }}
+                    </div>
+                    <div class="col-md-8" >
+                    </div>
+                    <div class="col-md-3 row">
+                        
+                        <div class="col-md-12">
+                            <label for="{{ form_cabecera.subtotal.id_for_label }}">Subtotal</label>
+                            {{ form_cabecera.subtotal|as_crispy_field }}
+                        </div>
+                        <div class="col-md-12 row">
+                            <label for="{{ form_cabecera.total.id_for_label }}">Total</label>
+                            {{ form_cabecera.total|as_crispy_field }}
+                            
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="d-flex justify-content-end">
+                    <a href="{% url 'listarventas' %}" class="btn btn-secondary">Cancelar</a> &nbsp;
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+
+<script>
+    
+    document.addEventListener("DOMContentLoaded", function(){
+        const clienteSelect = document.getElementById("id_idcliente");  // Django usa id_idcliente
+        const dnirucInput = document.getElementById("dniruc");
+        const direccionInput = document.getElementById("direccion");
+
+        clienteSelect.addEventListener("change", function(){
+            const clienteId = this.value;
+            if (!clienteId) {
+                dnirucInput.value = "";
+                direccionInput.value = "";
+                return;
+            }
+
+            fetch("/ventas2/api/cliente/" + clienteId + "/")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        dnirucInput.value = "";
+                        direccionInput.value = "";
+                    } else {
+                        dnirucInput.value = data.dniruc || "";
+                        
+                        direccionInput.value = data.direccion || "";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al obtener datos del cliente:", error);
+                    dnirucInput.value = "";
+                    direccionInput.value = "";
+                });
+        });
+
+        const tipoSelect = document.getElementById("id_idtipo");  // ID generado por Django
+        const nrodocInput = document.getElementById("id_nrodoc");
+
+        tipoSelect.addEventListener("change", function () {
+            const tipoId = this.value;
+
+            if (tipoId) {
+                fetch(`/ventas2/api/tipo/${tipoId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.nrodoc) {
+                            nrodocInput.value = data.nrodoc;
+                        } else {
+                            nrodocInput.value = '';
+                            console.error("Error en datos:", data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error al obtener Nro Doc:", error);
+                        nrodocInput.value = '';
+                    });
+            } else {
+                nrodocInput.value = '';
+            }
+        });
+        const productoSelect = document.getElementById("producto-select");
+        const unidadInput = document.getElementById("unidadpe");
+        const precioInput = document.getElementById("preciope");
+        const stockInput = document.getElementById("stock");
+
+        productoSelect.addEventListener("change", function(){
+            const productoId = this.value;
+            if (!productoId) {
+                unidadInput.value = "";
+                precioInput.value = "";
+                stockInput.value = "";
+                return;
+            }
+
+            fetch(`/ventas2/api/producto/${productoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Error:", data.error);
+                        unidadInput.value = "";
+                        precioInput.value = "";
+                        stockInput.value = "";
+                    } else {
+                        unidadInput.value = data.unidad || "";
+                        precioInput.value = data.precio || "";
+                        stockInput.value = data.stock || "";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al obtener datos del producto:", error);
+                    unidadInput.value = "";
+                    precioInput.value = "";
+                    stockInput.value = "";
+                });
+        });
+
+        
+    });
+
+    let cont = 0;
+    let subtotal = [];
+    let controlproducto = [];
+    let detalleventa = [];
+    let total = 0;
+
+    function number_format(amount, decimals) {
+        return Number(amount).toFixed(decimals);
+    }
+
+    function mostrarMensajeError(msg) {
+        alert(msg);
+    }
+
+    function agregarDetalle() {
+        const ruc = $("#dniruc").val();
+        if (ruc == '') {
+            mostrarMensajeError("Por favor seleccione el Cliente");
+            return false;
+        }
+
+        const descripcion = $("#producto-select option:selected").text();
+        if (!$("#producto-select").val()) {
+            mostrarMensajeError("Por favor seleccione el Producto");
+            return false;
+        }
+
+        const cantidad = $("#cantidadpe").val();
+        const stock = $("#stock").val();
+
+        if (!cantidad || Number(cantidad) <= 0) {
+            mostrarMensajeError("Por favor ingrese cantidad del producto mayor a 0");
+            return false;
+        }
+        if (Number(cantidad) > Number(stock)) {
+            mostrarMensajeError("No se tiene tal cantidad de producto, solo hay " + stock);
+            return false;
+        }
+
+        const pventa = $("#preciope").val();
+        if (!pventa || Number(pventa) <= 0) {
+            mostrarMensajeError("Por favor ingrese precio de venta del producto");
+            return false;
+        }
+
+        const cod_producto = $("#producto-select").val();
+
+        // Verificar si ya se agregó el producto
+        let band = false;
+        for (let i = 0; i < cont; i++) {
+            if (controlproducto[i] == cod_producto) {
+                band = true;
+                break;
+            }
+        }
+
+        if (band) {
+            mostrarMensajeError("No puede volver a vender el mismo producto");
+            return false;
+        }
+
+        const unidad = $("#unidadpe").val();
+        subtotal[cont] = cantidad * pventa;
+        controlproducto[cont] = cod_producto;
+        total += subtotal[cont];
+
+        document.getElementById("id_subtotal").value = number_format(total, 2);
+
+        let igv = 0;
+        let tt = total;
+
+        if (document.getElementById("id_nrodoc").value == '00010') {
+            igv = tt * 0.18;
+            tt = tt * 1.18;
+        }
+
+        document.getElementById("id_igv").value = number_format(igv, 2);
+        document.getElementById("id_total").value = number_format(tt, 2);
+
+        const fila = `
+        <tr class="selected" id="fila${cont}">
+            <td>
+                <button type="button" class="btn btn-danger btn-xs" onclick="eliminardetalle(${cont}, ${subtotal[cont]});">
+                    <i class="fa fa-times"></i>
+                </button>
+            </td>
+            <td><input type="text" name="cod_producto[]" value="${cod_producto}" readonly style="width:50px;"></td>
+            <td>${descripcion}</td>
+            <td><input type="text" name="unidad[]" value="${unidad}" readonly style="width:100px;"></td>
+            <td><input type="number" name="cantidad[]" value="${cantidad}" readonly style="width:80px;"></td>
+            <td><input type="number" name="pventa[]" value="${pventa}" readonly style="width:80px;"></td>
+            <td>${number_format(subtotal[cont], 2)}</td>
+        </tr>`;
+
+        $("#detalles").append(fila);
+
+        detalleventa.push({
+            codigo: cod_producto,
+            unidad: unidad,
+            cantidad: cantidad,
+            pventa: pventa,
+            subtotal: subtotal[cont]
+        });
+
+        cont++;
+        $("#producto-select").val("");
+        $("#unidadpe").val("");
+        $("#preciope").val("");
+        $("#stock").val("");
+        $("#cantidadpe").val("1");
+    }
+    function eliminardetalle(index, importe) {
+        total -= importe;
+        $("#fila" + index).remove();
+        controlproducto[index] = null;
+
+        document.getElementById("id_subtotal").value = number_format(total, 2);
+
+        let igv = 0;
+        let tt = total;
+
+        if (document.getElementById("id_nrodoc").value == '00010') {
+            igv = tt * 0.18;
+            tt = tt * 1.18;
+        }
+
+        document.getElementById("id_igv").value = number_format(igv, 2);
+        document.getElementById("id_total").value = number_format(tt, 2);
+    }
+</script>
+{% endblock %}

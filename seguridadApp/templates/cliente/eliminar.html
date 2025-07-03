@@ -1,0 +1,17 @@
+{% extends "plantilla.html" %}
+
+{% block title %}Eliminar Cliente{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body text-center">
+        <p>¿Estás seguro de que deseas eliminar al cliente:</p>
+        <h4>{{ object.nombres }} {{ object.apellidos }}</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+            <a href="{% url 'clientes' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "plantilla.html" %}
+{% block content %}
+<div class="container">
+ <div class="card card-outline card-info mt-3">
+    <div class="card-header">
+        <h1 class="card-title">LISTADO DE UNIDADES</h1>
+    <a href="{% url 'agregarunidades' %}" class='btn btn-sm btn-primary btnadd'><i
+    class='fas fa-plus'></i> NUEVO</a>
+    </div>
+ <div class="card-body">
+
+    <form action="" method="GET" class="form-inline mb-3">
+        <input type="text" name="buscar" class="form-control mr-2" placeholder="Buscar" value="">
+        <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+    </form>
+
+    <table class="table table-striped">
+        <thead class="bg-info text-white">
+            <tr>
+                <th>CODIGO</th>
+                <th>DESCRIPCIÓN</th>
+                <th><center>OPCIONES</center></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if unidades %}
+            {% for u in unidades %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.descripcion }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'editarunidades' u.id %}" class="btn btn-info btn-sm"><i class="fa fa-edit"></i> Editar</a>
+                        <a href="#" onclick="eliminarUnidad('{{u.id}}','{{u.descripcion}}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i> Eliminar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="3" class="text-center">No hay registros</td></tr>
+        {% endif %}
+        </tbody>
+    </table>
+ </div>
+</div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function eliminarUnidad(id, descripcion) {
+    Swal.fire({
+        title: "¿Eliminar unidad?",
+        text: "ID: " + id + " - " + descripcion,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#dc3545"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "{% url 'eliminarunidades' 0 %}".replace('0', id);
+        }
+    });
+};
+</script>
+{% endblock %}
